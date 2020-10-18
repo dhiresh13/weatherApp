@@ -63,6 +63,8 @@ export default class App extends React.Component {
 			error_message
 		);
 	}
+
+	//function to fetch data from the co-ordinates
 	getPosition(position) {
 		let { weather } = this.state;
 		let weatherData;
@@ -127,6 +129,7 @@ export default class App extends React.Component {
 		);
 	}
 
+	//Function to construct data structure for the recharts
 	timeLine(data) {
 		let { weatherData } = this.state;
 		let timeFrame = [];
@@ -153,6 +156,7 @@ export default class App extends React.Component {
 		});
 	}
 
+	//Function to accept the input of searchbox
 	handleChange(e) {
 		let { weather } = this.state;
 		let filtered;
@@ -189,6 +193,7 @@ export default class App extends React.Component {
 		});
 	}
 
+	//Function to select the dropdown item
 	setPosition(city) {
 		let { filtered } = this.state;
 		let inputValue = city.name + "," + city.state;

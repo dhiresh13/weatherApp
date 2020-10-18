@@ -1,6 +1,7 @@
 import axios from "axios";
 import { isNotEmpty } from "./Helper";
 
+//Function for making axios ajax calls
 export function getAjaxCall(api, callbackFn) {
 	const config = {
 		method: "get",
