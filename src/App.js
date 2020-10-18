@@ -35,6 +35,7 @@ export default class App extends React.Component {
 				lon: "",
 				lat: "",
 			},
+			filtered: [],
 		};
 		this.getPosition = this.getPosition.bind(this);
 		this.error = this.error.bind(this);
@@ -158,12 +159,11 @@ export default class App extends React.Component {
 
 	//Function to accept the input of searchbox
 	handleChange(e) {
-		let { weather } = this.state;
-		let filtered;
+		let { weather, filtered } = this.state;
 
 		if (e.target.value) {
 			filtered = cities.filter((ct, index) => {
-				if (ct.name.toLowerCase().includes(e.target.value)) {
+				if (ct.name.toLowerCase().includes(e.target.value.toLowerCase())) {
 					return ct;
 				}
 			});
@@ -244,9 +244,7 @@ export default class App extends React.Component {
 						<button className="searchButton">
 							<img className="searchBarIcon" src={Search} />
 						</button>
-						<section
-							style={hide ? { display: "none" } : {}}
-							className="searchList">
+						<section className="searchList">
 							{isNotEmpty(filtered) &&
 								filtered.map((city, index) => {
 									if (city.temp) {
