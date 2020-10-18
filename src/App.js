@@ -40,6 +40,7 @@ export default class App extends React.Component {
 		this.error = this.error.bind(this);
 		this.timeLine = this.timeLine.bind(this);
 		this.handleChange = this.handleChange.bind(this);
+		this.setPosition = this.setPosition.bind(this);
 	}
 
 	componentDidMount() {
@@ -155,6 +156,7 @@ export default class App extends React.Component {
 	handleChange(e) {
 		let { weather } = this.state;
 		let filtered;
+
 		if (e.target.value) {
 			filtered = cities.filter((ct, index) => {
 				if (ct.name.toLowerCase().includes(e.target.value)) {
@@ -187,6 +189,25 @@ export default class App extends React.Component {
 		});
 	}
 
+	setPosition(city) {
+		let { filtered } = this.state;
+		let inputValue = city.name + "," + city.state;
+		let position = {
+			coords: {
+				latitude: city.lat,
+				longitude: city.lon,
+			},
+		};
+		this.setState(
+			{
+				value: inputValue,
+				filtered: [],
+			},
+			() => {
+				this.getPosition(position);
+			}
+		);
+	}
 	render() {
 		let {
 			loader,
@@ -209,11 +230,10 @@ export default class App extends React.Component {
 						<img className="searchBarIcon locationIcon" src={Location} />
 						<input
 							type="text"
-							onBlur={() => this.setState({ hide: true })}
-							onFocus={() => this.setState({ hide: false })}
 							className="searchBar"
 							onChange={this.handleChange}
 							placeholder="Search"
+							value={value}
 						/>
 
 						<button className="searchButton">
@@ -223,15 +243,16 @@ export default class App extends React.Component {
 							style={hide ? { display: "none" } : {}}
 							className="searchList">
 							{isNotEmpty(filtered) &&
-								filtered.map((city) => {
+								filtered.map((city, index) => {
 									if (city.temp) {
 										return (
-											<div className="searchListTab">
+											<div
+												onClick={() => this.setPosition(city)}
+												key={index}
+												className="searchListTab">
 												<span>
-													<span className="text-capitalize">
-														{city.name.split(value)[0].bold[1]}
-													</span>
-													,<span className="text-lighter">{city.state}</span>
+													<span className="text-capitalize">{city.name}</span>,
+													<span className="text-lighter">{city.state}</span>
 												</span>
 												<div>
 													<div className="d-flex justify-space-between">
