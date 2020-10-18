@@ -21,6 +21,7 @@ import {
 	Tooltip,
 	YAxis,
 } from "recharts";
+import cities from "./cities";
 import { isNotEmpty } from "./Helper";
 
 export default class App extends React.Component {
@@ -38,6 +39,7 @@ export default class App extends React.Component {
 		this.getPosition = this.getPosition.bind(this);
 		this.error = this.error.bind(this);
 		this.timeLine = this.timeLine.bind(this);
+		this.handleChange = this.handleChange.bind(this);
 	}
 
 	componentDidMount() {
@@ -69,8 +71,7 @@ export default class App extends React.Component {
 		const longitude = position.coords.longitude;
 		weather.lon = longitude;
 		weather.lat = latitude;
-		let api = `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}
-&lon=${longitude}&units=${weather.unit}&appid=${weather.appid}`;
+		let api = `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&units=${weather.unit}&appid=${weather.appid}`;
 
 		getAjaxCall(
 			api,
@@ -151,6 +152,41 @@ export default class App extends React.Component {
 		});
 	}
 
+	handleChange(e) {
+		let { weather } = this.state;
+		let filtered;
+		if (e.target.value) {
+			filtered = cities.filter((ct, index) => {
+				if (ct.name.toLowerCase().includes(e.target.value)) {
+					return ct;
+				}
+			});
+
+			if (filtered.length > 1) {
+				filtered.map((city, index) => {
+					if (index < 10) {
+						let api = `https://api.openweathermap.org/data/2.5/weather?lat=${city.lat}&lon=${city.lon}&units=${weather.unit}&appid=${weather.appid}`;
+						getAjaxCall(
+							api,
+							function (data, error) {
+								if (data) {
+									filtered[index].temp = data.main.temp.toFixed();
+									filtered[index].type = data.weather[0].main;
+								} else {
+									console.log(error);
+								}
+							}.bind(this)
+						);
+					}
+				});
+			}
+		}
+		this.setState({
+			filtered: filtered,
+			value: e.target.value,
+		});
+	}
+
 	render() {
 		let {
 			loader,
@@ -159,9 +195,10 @@ export default class App extends React.Component {
 			timeFrame,
 			dayFrame,
 			daySelect,
+			value,
+			hide,
+			filtered,
 		} = this.state;
-		console.log(dayFrame);
-		console.log(timeFrame);
 
 		if (loader) {
 			return <div className="loader"></div>;
@@ -170,30 +207,55 @@ export default class App extends React.Component {
 				<div>
 					<div className="searchBarContainer">
 						<img className="searchBarIcon locationIcon" src={Location} />
-						<input type="text" className="searchBar" placeholder="Search" />
+						<input
+							type="text"
+							onBlur={() => this.setState({ hide: true })}
+							onFocus={() => this.setState({ hide: false })}
+							className="searchBar"
+							onChange={this.handleChange}
+							placeholder="Search"
+						/>
 
 						<button className="searchButton">
 							<img className="searchBarIcon" src={Search} />
 						</button>
-						{/* <section className="searchList">
-							<div className="searchListTab">
-								<span>
-									<span className="text-capitalize">
-										<b className="text-capitalize">Mum</b>bai
-									</span>
-									,<span className="text-lighter">Maharashtra</span>
-								</span>
-								<div>
-									<div className="d-flex justify-space-between">
-										<div className="d-flex fd-column">
-											<span>32^ c</span>
-											<span className="text-lighter">Haze</span>
-										</div>
-										<img className="searchListIcon" src={Sunny} />
-									</div>
-								</div>
-							</div>
-						</section> */}
+						<section
+							style={hide ? { display: "none" } : {}}
+							className="searchList">
+							{isNotEmpty(filtered) &&
+								filtered.map((city) => {
+									if (city.temp) {
+										return (
+											<div className="searchListTab">
+												<span>
+													<span className="text-capitalize">
+														{city.name.split(value)[0].bold[1]}
+													</span>
+													,<span className="text-lighter">{city.state}</span>
+												</span>
+												<div>
+													<div className="d-flex justify-space-between">
+														<div className="d-flex fd-column">
+															<span>{city.temp}&deg;C</span>
+															<span className="text-lighter">{city.type}</span>
+														</div>
+														<img
+															className="searchListIcon"
+															src={
+																city.type == "Clear"
+																	? Clear
+																	: city.type == "Rain"
+																	? Rain
+																	: Cloudy
+															}
+														/>
+													</div>
+												</div>
+											</div>
+										);
+									}
+								})}
+						</section>
 					</div>
 					<section className="forecastContainer">
 						{isNotEmpty(weekData) &&
